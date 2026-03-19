@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Carta de Bebidas Premium</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --line: #e5e7eb;
+      --text: #111827;
+      --muted: #6b7280;
+      --primary: #111111;
+      --primary-2: #374151;
+      --ok-bg: #ecfdf5;
+      --ok-bd: #a7f3d0;
+      --ok-tx: #065f46;
+      --err-bg: #fef2f2;
+      --err-bd: #fecaca;
+      --err-tx: #991b1b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 18px 50px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #111111, #2d3748);
+      color: #fff;
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.12);
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+
+    .hero p {
+      margin: 0;
+      color: rgba(255,255,255,.88);
+      line-height: 1.5;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 8px 22px rgba(0,0,0,.04);
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      margin: 0 0 18px;
+      font-size: 22px;
+    }
+
+    .section-subtitle {
+      margin: -8px 0 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary-2);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px 13px;
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: #9ca3af;
+      box-shadow: 0 0 0 3px rgba(17,17,17,.05);
+    }
+
+    textarea {
+      min-height: 95px;
+      resize: vertical;
+    }
+
+    .items-toolbar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      transition: .18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: #111111;
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+      color: #fff;
+    }
+
+    .btn-light {
+      background: #eef2f7;
+      color: #111827;
+      border: 1px solid #dbe2ea;
+    }
+
+    .drink-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background: #fafafa;
+      margin-bottom: 14px;
+    }
+
+    .drink-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .drink-card-title {
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .result, .error {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 14px;
+      line-height: 1.6;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .result {
+      background: var(--ok-bg);
+      border: 1px solid var(--ok-bd);
+      color: var(--ok-tx);
+    }
+
+    .error {
+      background: var(--err-bg);
+      border: 1px solid var(--err-bd);
+      color: var(--err-tx);
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .loading {
+      opacity: .72;
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 12px;
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #e5e7eb;
+      padding: 5px 8px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+
+    .preview-card {
+      background: linear-gradient(180deg, #ffffff, #f8fafc);
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 20px;
+    }
+
+    .preview-header {
+      text-align: center;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+
+    .preview-logo {
+      display: none;
+      max-width: 120px;
+      max-height: 120px;
+      margin: 0 auto 12px;
+      object-fit: contain;
+    }
+
+    .preview-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .preview-subtitle {
+      margin: 6px 0 0;
+      color: #6b7280;
+      font-style: italic;
+    }
+
+    .preview-meta {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+
+    .preview-section {
+      margin-top: 18px;
+    }
+
+    .preview-section h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 6px;
+    }
+
+    .preview-item {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .preview-item strong {
+      display: inline-block;
+      margin-bottom: 2px;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    @media (max-width: 900px) {
+      .grid, .grid-4 {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 25px;
+      }
+
+      .drink-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="hero">
+      <h1>Generador de Carta de Bebidas Premium</h1>
+      <p>
+        Cargá los datos del local, subí el logo, agregá bebidas sin alcohol y con alcohol,
+        visualizá una preview y generá automáticamente la carta en Google Docs y PDF.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">Datos del restaurante</h2>
+      <p class="section-subtitle">Información visible en la cabecera de la carta.</p>
+
+      <div class="grid">
+        <div class="field">
+          <label>Nombre del restaurante / bar</label>
+          <input id="nombreRestaurante" placeholder="Ej: Bar Atlántico" />
+        </div>
+
+        <div class="field">
+          <label>Subtítulo</label>
+          <input id="subtitulo" placeholder="Ej: Carta ideal demo de bebidas" />
+        </div>
+
+        <div class="field">
+          <label>Teléfono</label>
+          <input id="telefono" placeholder="+54 223..." />
+        </div>
+
+        <div class="field">
+          <label>Instagram</label>
+          <input id="instagram" placeholder="@tuinstagram" />
+        </div>
+
+        <div class="field">
+          <label>Dirección</label>
+          <input id="direccion" placeholder="Dirección del local" />
+        </div>
+
+        <div class="field">
+          <label>Horario</label>
+          <input id="horario" placeholder="Ej: Todos los días de 18:00 a 03:00" />
+        </div>
+
+        <div class="field">
+          <label>Logo del restaurante</label>
+          <input id="logoFile" type="file" accept="image/*" />
+          <small class="muted">Podés subir PNG, JPG o WEBP.</small>
+          <img id="logoPreview" style="display:none; max-width:140px; margin-top:10px; border-radius:10px; border:1px solid #e5e7eb;" />
+        </div>
+
+        <div class="field">
+          <label>Color principal</label>
+          <input id="colorPrincipal" placeholder="#1F2937" />
+        </div>
+
+        <div class="field">
+          <label>Color secundario</label>
+          <input id="colorSecundario" placeholder="#6B7280" />
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">Configuración de la carta</h2>
+      <p class="section-subtitle">Parámetros generales de la carta de bebidas.</p>
+
+      <div class="grid">
+        <div class="field">
+          <label>Nombre de la carta</label>
+          <input id="nombreMenu" placeholder="Ej: Carta de Bebidas" />
+        </div>
+
+        <div class="field">
+          <label>Tipo de plantilla</label>
+          <select id="tipoPlantilla">
+            <option value="Bebidas">Bebidas</option>
+            <option value="Bebidas Premium">Bebidas Premium</option>
+            <option value="Bar Clásico">Bar Clásico</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Mostrar precios</label>
+          <select id="mostrarPrecios">
+            <option value="SI">Sí</option>
+            <option value="NO">No</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Tipo de menú</label>
+          <input id="tipoMenu" value="BEBIDAS" readonly />
+        </div>
+
+        <div class="field" style="grid-column: 1 / -1;">
+          <label>Observaciones</label>
+          <textarea id="observaciones" placeholder="Ej: Precios a definir. Carta demo ideal de bebidas sin alcohol y con alcohol."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="badge">Bebidas dinámicas</span>
+      <h2 class="section-title">Bebidas</h2>
+      <p class="section-subtitle">
+        Agregá todas las bebidas necesarias. Cada una puede pertenecer a
+        <strong>Sin alcohol</strong> o <strong>Con alcohol</strong>.
+      </p>
+
+      <div class="items-toolbar">
+        <button type="button" class="btn-primary" onclick="addDrinkItem()">Agregar bebida</button>
+        <button type="button" class="btn-light" onclick="addDrinkItem({ seccion: 'Sin alcohol' })">Agregar sin alcohol</button>
+        <button type="button" class="btn-light" onclick="addDrinkItem({ seccion: 'Con alcohol' })">Agregar con alcohol</button>
+      </div>
+
+      <div id="itemsContainer"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">Preview premium</h2>
+      <p class="section-subtitle">Vista rápida de cómo quedaría la carta antes de generarla.</p>
+
+      <div class="preview-card">
+        <div class="preview-header">
+          <img id="previewLogoCard" class="preview-logo" />
+          <h3 id="previewTitle" class="preview-title">Nombre del restaurante</h3>
+          <p id="previewSubtitle" class="preview-subtitle">Subtítulo</p>
+          <div id="previewMeta" class="preview-meta"></div>
+        </div>
+
+        <div class="preview-section">
+          <h3>BEBIDAS SIN ALCOHOL</h3>
+          <div id="previewSinAlcohol"></div>
+        </div>
+
+        <div class="preview-section">
+          <h3>BEBIDAS CON ALCOHOL</h3>
+          <div id="previewConAlcohol"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">Acciones</h2>
+      <div class="footer-actions">
+        <button id="submitBtn" type="button" class="btn-primary" onclick="submitDrinksMenu()">Generar carta</button>
+        <button type="button" class="btn-secondary" onclick="loadDemoData()">Cargar demo ideal</button>
+        <button type="button" class="btn-light" onclick="renderPreview()">Actualizar preview</button>
+        <button type="button" class="btn-light" onclick="resetForm()">Limpiar</button>
+      </div>
+
+      <div id="resultBox" class="result"></div>
+      <div id="errorBox" class="error"></div>
+    </div>
+  </div>
+
+  <script>
+    const APPS_SCRIPT_URL = 'PEGAR_URL_DEPLOY_APPS_SCRIPT';
+    const TOKEN = 'MENUS2026';
+
+    let logoDataBase64 = '';
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('No se pudo leer el archivo del logo'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleLogoChange(event) {
+      const file = event.target.files && event.target.files[0];
+      const preview = document.getElementById('logoPreview');
+      const previewCard = document.getElementById('previewLogoCard');
+
+      if (!file) {
+        logoDataBase64 = '';
+        preview.style.display = 'none';
+        preview.removeAttribute('src');
+        previewCard.style.display = 'none';
+        previewCard.removeAttribute('src');
+        return;
+      }
+
+      const dataUrl = await fileToDataUrl(file);
+      logoDataBase64 = dataUrl;
+
+      preview.src = dataUrl;
+      preview.style.display = 'block';
+
+      previewCard.src = dataUrl;
+      previewCard.style.display = 'block';
+
+      renderPreview();
+    }
+
+    function addDrinkItem(data = {}) {
+      const container = document.getElementById('itemsContainer');
+      const card = document.createElement('div');
+      card.className = 'drink-card';
+
+      const seccion = escapeHtml(data.seccion || 'Sin alcohol');
+      const subcategoria = escapeHtml(data.subcategoria || '');
+      const nombreProducto = escapeHtml(data.nombreProducto || '');
+      const descripcion = escapeHtml(data.descripcion || '');
+      const presentacion = escapeHtml(data.presentacion || '');
+      const precio = escapeHtml(data.precio || '');
+      const precioPromo = escapeHtml(data.precioPromo || '');
+      const etiqueta = escapeHtml(data.etiqueta || '');
+      const orden = escapeHtml(data.orden || (document.querySelectorAll('.drink-card').length + 1));
+
+      card.innerHTML = `
+        <div class="drink-card-header">
+          <div>
+            <div class="drink-card-title">Bebida</div>
+            <div class="muted">Configurá sección, subcategoría, nombre, presentación y precios.</div>
+          </div>
+          <button type="button" class="btn-light" onclick="this.closest('.drink-card').remove(); renderPreview();">Eliminar</button>
+        </div>
+
+        <div class="grid-4">
+          <div class="field">
+            <label>Sección</label>
+            <select class="seccion" onchange="renderPreview()">
+              <option value="Sin alcohol" ${seccion === 'Sin alcohol' ? 'selected' : ''}>Sin alcohol</option>
+              <option value="Con alcohol" ${seccion === 'Con alcohol' ? 'selected' : ''}>Con alcohol</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Subcategoría</label>
+            <input class="subcategoria" value="${subcategoria}" placeholder="Ej: Gaseosas, Cervezas, Tragos" oninput="renderPreview()" />
+          </div>
+
+          <div class="field">
+            <label>Nombre de la bebida</label>
+            <input class="nombreProducto" value="${nombreProducto}" placeholder="Ej: Pepsi regular / Quilmes Clásica" oninput="renderPreview()" />
+          </div>
+
+          <div class="field">
+            <label>Presentación</label>
+            <input class="presentacion" value="${presentacion}" placeholder="Ej: 354 ml, Copa, Pinta" oninput="renderPreview()" />
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label>Descripción</label>
+            <textarea class="descripcion" placeholder="Descripción breve de la bebida" oninput="renderPreview()">${descripcion}</textarea>
+          </div>
+
+          <div class="grid">
+            <div class="field">
+              <label>Precio</label>
+              <input class="precio" type="number" step="0.01" value="${precio}" placeholder="0" oninput="renderPreview()" />
+            </div>
+
+            <div class="field">
+              <label>Precio promo</label>
+              <input class="precioPromo" type="number" step="0.01" value="${precioPromo}" placeholder="Opcional" oninput="renderPreview()" />
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-4">
+          <div class="field">
+            <label>Etiqueta</label>
+            <input class="etiqueta" value="${etiqueta}" placeholder="Ej: PROMO, TOP, RECOMENDADO" oninput="renderPreview()" />
+          </div>
+
+          <div class="field">
+            <label>Destacado</label>
+            <select class="destacado" onchange="renderPreview()">
+              <option value="NO" ${(data.destacado ? 'NO' : 'selected')}>No</option>
+              <option value="SI" ${(data.destacado ? 'selected' : '')}>Sí</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Orden</label>
+            <input class="orden" type="number" value="${orden}" oninput="renderPreview()" />
+          </div>
+
+          <div class="field">
+            <label>Activo</label>
+            <select class="activo" onchange="renderPreview()">
+              <option value="SI" ${(data.activo === false ? '' : 'selected')}>Sí</option>
+              <option value="NO" ${(data.activo === false ? 'selected' : '')}>No</option>
+            </select>
+          </div>
+        </div>
+      `;
+
+      container.appendChild(card);
+      renderPreview();
+    }
+
+    function collectItems() {
+      const cards = document.querySelectorAll('.drink-card');
+
+      return Array.from(cards).map(card => ({
+        seccion: card.querySelector('.seccion').value.trim(),
+        subcategoria: card.querySelector('.subcategoria').value.trim(),
+        nombreProducto: card.querySelector('.nombreProducto').value.trim(),
+        descripcion: card.querySelector('.descripcion').value.trim(),
+        presentacion: card.querySelector('.presentacion').value.trim(),
+        precio: card.querySelector('.precio').value,
+        precioPromo: card.querySelector('.precioPromo').value,
+        destacado: card.querySelector('.destacado').value === 'SI',
+        etiqueta: card.querySelector('.etiqueta').value.trim(),
+        orden: card.querySelector('.orden').value,
+        activo: card.querySelector('.activo').value === 'SI'
+      })).filter(item => item.nombreProducto);
+    }
+
+    function getPayload() {
+      return {
+        action: 'saveDrinksMenu',
+        token: TOKEN,
+        restaurante: {
+          nombreRestaurante: document.getElementById('nombreRestaurante').value.trim(),
+          subtitulo: document.getElementById('subtitulo').value.trim(),
+          telefono: document.getElementById('telefono').value.trim(),
+          instagram: document.getElementById('instagram').value.trim(),
+          direccion: document.getElementById('direccion').value.trim(),
+          horario: document.getElementById('horario').value.trim(),
+          logoData: logoDataBase64,
+          colorPrincipal: document.getElementById('colorPrincipal').value.trim(),
+          colorSecundario: document.getElementById('colorSecundario').value.trim()
+        },
+        menu: {
+          nombreMenu: document.getElementById('nombreMenu').value.trim(),
+          tipoPlantilla: document.getElementById('tipoPlantilla').value,
+          mostrarPrecios: document.getElementById('mostrarPrecios').value === 'SI',
+          observaciones: document.getElementById('observaciones').value.trim(),
+          tipoMenu: document.getElementById('tipoMenu').value.trim()
+        },
+        items: collectItems()
+      };
+    }
+
+    function validateFront(payload) {
+      if (!payload.restaurante.nombreRestaurante) {
+        throw new Error('Completá el nombre del restaurante.');
+      }
+
+      if (!payload.menu.nombreMenu) {
+        throw new Error('Completá el nombre de la carta.');
+      }
+
+      if (!payload.items.length) {
+        throw new Error('Agregá al menos una bebida.');
+      }
+    }
+
+    function showResult(html) {
+      const result = document.getElementById('resultBox');
+      const error = document.getElementById('errorBox');
+
+      error.style.display = 'none';
+      result.innerHTML = html;
+      result.style.display = 'block';
+    }
+
+    function showError(message) {
+      const result = document.getElementById('resultBox');
+      const error = document.getElementById('errorBox');
+
+      result.style.display = 'none';
+      error.textContent = message;
+      error.style.display = 'block';
+    }
+
+    function setLoading(isLoading) {
+      document.body.classList.toggle('loading', isLoading);
+      document.getElementById('submitBtn').textContent = isLoading ? 'Generando...' : 'Generar carta';
+    }
+
+    function formatPrice(value) {
+      if (value === '' || value === null || value === undefined) return '$';
+      const n = Number(value);
+      if (Number.isNaN(n)) return '$';
+      return '$' + n.toLocaleString('es-AR');
+    }
+
+    function renderPreviewGroup(items, containerId) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      const activeItems = items
+        .filter(i => i.activo)
+        .sort((a, b) => Number(a.orden || 0) - Number(b.orden || 0));
+
+      if (!activeItems.length) {
+        container.innerHTML = '<div class="muted">Sin bebidas cargadas.</div>';
+        return;
+      }
+
+      const grouped = {};
+      activeItems.forEach(item => {
+        const sub = item.subcategoria || 'Otras';
+        if (!grouped[sub]) grouped[sub] = [];
+        grouped[sub].push(item);
+      });
+
+      Object.keys(grouped).sort().forEach(sub => {
+        const title = document.createElement('div');
+        title.style.fontWeight = '700';
+        title.style.margin = '10px 0 8px';
+        title.textContent = sub;
+        container.appendChild(title);
+
+        grouped[sub].forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'preview-item';
+
+          const hasPromo = Number(item.precioPromo || 0) > 0;
+          const priceValue = hasPromo ? item.precioPromo : item.precio;
+
+          div.innerHTML = `
+            <strong>${escapeHtml(item.nombreProducto || '')}</strong>
+            ${item.presentacion ? ' · ' + escapeHtml(item.presentacion) : ''}
+            ${document.getElementById('mostrarPrecios').value === 'SI' ? ' — ' + escapeHtml(formatPrice(priceValue)) : ''}
+            ${item.etiqueta ? ' <span class="muted">(' + escapeHtml(item.etiqueta) + ')</span>' : ''}
+            ${item.descripcion ? '<div class="muted">' + escapeHtml(item.descripcion) + '</div>' : ''}
+          `;
+          container.appendChild(div);
+        });
+      });
+    }
+
+    function renderPreview() {
+      document.getElementById('previewTitle').textContent =
+        document.getElementById('nombreRestaurante').value.trim() || 'Nombre del restaurante';
+
+      document.getElementById('previewSubtitle').textContent =
+        document.getElementById('subtitulo').value.trim() || 'Subtítulo';
+
+      const metaParts = [
+        document.getElementById('direccion').value.trim(),
+        document.getElementById('telefono').value.trim(),
+        document.getElementById('instagram').value.trim(),
+        document.getElementById('horario').value.trim()
+      ].filter(Boolean);
+
+      document.getElementById('previewMeta').textContent = metaParts.join(' · ');
+
+      const items = collectItems();
+      renderPreviewGroup(items.filter(i => i.seccion === 'Sin alcohol'), 'previewSinAlcohol');
+      renderPreviewGroup(items.filter(i => i.seccion === 'Con alcohol'), 'previewConAlcohol');
+    }
+
+    async function submitDrinksMenu() {
+      try {
+        const payload = getPayload();
+        validateFront(payload);
+
+        setLoading(true);
+
+        const resp = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload),
+          redirect: 'follow'
+        });
+
+        const text = await resp.text();
+
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          throw new Error('La respuesta del servidor no es JSON válido: ' + text);
+        }
+
+        if (!data.ok) {
+          throw new Error(data.error || 'No se pudo generar la carta');
+        }
+
+        showResult(`
+          <strong>Carta generada correctamente.</strong><br>
+          ID Restaurante: ${escapeHtml(data.restaurantId)}<br>
+          ID Menú: ${escapeHtml(data.menuId)}<br><br>
+          <a href="${data.docUrl}" target="_blank" rel="noopener noreferrer">Abrir Google Doc</a><br>
+          <a href="${data.pdfUrl}" target="_blank" rel="noopener noreferrer">Abrir PDF</a>
+        `);
+
+      } catch (err) {
+        showError(err.message || 'Ocurrió un error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function resetForm() {
+      document.querySelectorAll('input, textarea').forEach(el => {
+        if (el.id === 'tipoMenu') {
+          el.value = 'BEBIDAS';
+        } else if (el.type === 'file') {
+          el.value = '';
+        } else {
+          el.value = '';
+        }
+      });
+
+      logoDataBase64 = '';
+      const preview = document.getElementById('logoPreview');
+      preview.style.display = 'none';
+      preview.removeAttribute('src');
+
+      const previewCard = document.getElementById('previewLogoCard');
+      previewCard.style.display = 'none';
+      previewCard.removeAttribute('src');
+
+      document.getElementById('tipoPlantilla').value = 'Bebidas';
+      document.getElementById('mostrarPrecios').value = 'SI';
+      document.getElementById('itemsContainer').innerHTML = '';
+      document.getElementById('resultBox').style.display = 'none';
+      document.getElementById('errorBox').style.display = 'none';
+
+      addDrinkItem();
+      renderPreview();
+    }
+
+    function loadDemoData() {
+      document.getElementById('nombreRestaurante').value = 'Bar Atlántico';
+      document.getElementById('subtitulo').value = 'Carta ideal demo de bebidas';
+      document.getElementById('telefono').value = '+54 223 444 7788';
+      document.getElementById('instagram').value = '@baratlantico';
+      document.getElementById('direccion').value = 'Güemes 2450, Mar del Plata';
+      document.getElementById('horario').value = 'Todos los días de 18:00 a 03:00';
+      document.getElementById('colorPrincipal').value = '#1F2937';
+      document.getElementById('colorSecundario').value = '#6B7280';
+      document.getElementById('nombreMenu').value = 'Carta de Bebidas';
+      document.getElementById('tipoPlantilla').value = 'Bebidas';
+      document.getElementById('mostrarPrecios').value = 'SI';
+      document.getElementById('observaciones').value = 'Precios a definir. Carta demo ideal de bebidas sin alcohol y con alcohol.';
+
+      const container = document.getElementById('itemsContainer');
+      container.innerHTML = '';
+
+      addDrinkItem({
+        seccion: 'Sin alcohol',
+        subcategoria: 'Gaseosas',
+        nombreProducto: 'Pepsi regular',
+        descripcion: 'Lata 354 ml.',
+        presentacion: 'Lata 354 ml',
+        precio: '',
+        precioPromo: '',
+        destacado: false,
+        etiqueta: '',
+        orden: 1,
+        activo: true
+      });
+
+      addDrinkItem({
+        seccion: 'Sin alcohol',
+        subcategoria: 'Gaseosas',
+        nombreProducto: 'Pepsi Black',
+        descripcion: 'Lata 354 ml.',
+        presentacion: 'Lata 354 ml',
+        precio: '',
+        precioPromo: '',
+        destacado: false,
+        etiqueta: '',
+        orden: 2,
+        activo: true
+      });
+
+      addDrinkItem({
+        seccion: 'Sin alcohol',
+        subcategoria: 'Gaseosas',
+        nombreProducto: 'Stella Artois 0.0%',
+        descripcion: 'Porrón sin alcohol.',
+        presentacion: 'Porrón',
+        precio: '',
+        precioPromo: '',
+        destacado: false,
+        etiqueta: 'SIN ALCOHOL',
+        orden: 3,
+        activo: true
+      });
+
+      addDrinkItem({
+        seccion: 'Con alcohol',
+        subcategoria: 'Cervezas',
+        nombreProducto: 'Quilmes Clásica',
+        descripcion: 'Litro.',
+        presentacion: 'Litro',
+        precio: '',
+        precioPromo: '',
+        destacado: false,
+        etiqueta: '',
+        orden: 4,
+        activo: true
+      });
+
+      addDrinkItem({
+        seccion: 'Con alcohol',
+        subcategoria: 'Cervezas',
+        nombreProducto: 'Stella Artois',
+        descripcion: 'Litro.',
+        presentacion: 'Litro',
+        precio: '',
+        precioPromo: '',
+        destacado: false,
+        etiqueta: '',
+        orden: 5,
+        activo: true
+      });
+
+      addDrinkItem({
+        seccion: 'Con alcohol',
+        subcategoria: 'Cervezas',
+        nombreProducto: 'Patagonia',
+        descripcion: 'Lata. Variedades: Amber Lager, 24.7.',
+        presentacion: 'Lata',
+        precio: '',
+        precioPromo: '',
+        destacado: true,
+        etiqueta: 'VARIEDADES',
+        orden: 6,
+        activo: true
+      });
+
+      addDrinkItem({
+        seccion: 'Con alcohol',
+        subcategoria: 'Cervezas',
+        nombreProducto: 'Michelob Ultra',
+        descripcion: 'Cerveza ligera.',
+        presentacion: 'Botella',
+        precio: '',
+        precioPromo: '',
+        destacado: false,
+        etiqueta: '',
+        orden: 7,
+        activo: true
+      });
+
+      renderPreview();
+    }
+
+    document.getElementById('logoFile').addEventListener('change', (e) => {
+      handleLogoChange(e).catch(err => showError(err.message));
+    });
+
+    addDrinkItem();
+    renderPreview();
+  </script>
+</body>
+</html>
